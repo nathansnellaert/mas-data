@@ -1,0 +1,23 @@
+{
+  "status_code": 200,
+  "headers": {
+    "date": "Sun, 04 Jan 2026 13:16:10 GMT",
+    "content-type": "application/json",
+    "transfer-encoding": "chunked",
+    "connection": "keep-alive",
+    "x-amzn-requestid": "3a68dbe7-34d7-4753-a791-3bf4b49501a2",
+    "access-control-allow-origin": "*",
+    "x-amz-apigw-id": "WqU0FEu-SQ0EXQg=",
+    "x-amzn-trace-id": "Root=1-695a6819-6fb036e95098e6493dd21f0a",
+    "cf-cache-status": "DYNAMIC",
+    "set-cookie": "__cf_bm=owrOioDr9RbAcDON4er9OJGUQ0w2qa0diUWHTUYN3sU-1767532569.6140566-1.0.1.1-ZQrULwS3amq9t6mmUi7q3tmGu6UofYt09lIABrWi0I5l9YsUONxtygi9CsRnZDN2F36ouorDXPUrftP9_3OHkkXvzxDDRC6JjZX5vxl4T0YNwc0.zNgEOsz73Fto8ZOD; HttpOnly; Secure; Path=/; Domain=data.gov.sg; Expires=Sun, 04 Jan 2026 13:46:10 GMT",
+    "strict-transport-security": "max-age=31536000; includeSubDomains",
+    "x-content-type-options": "nosniff",
+    "content-encoding": "br",
+    "server": "cloudflare",
+    "cf-ray": "9b8b024018d667a3-SJC"
+  },
+  "url": "https://api-production.data.gov.sg/v2/public/api/datasets/d_046ff8d521a218d9178178cfbfc45c2c/list-rows?limit=1000&idCursor%5Bvalue%5D=1000&limit=1000",
+  "method": "GET",
+  "cached_at": "2026-01-04T05:16:10.051669"
+}
