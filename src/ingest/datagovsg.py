@@ -1,7 +1,7 @@
 """Ingest MAS data from data.gov.sg API.
 
-Singapore's data.gov.sg provides some MAS datasets via API.
-Currently available: Exchange rates (SGD/USD daily and annual).
+Singapore's data.gov.sg provides MAS datasets via API.
+This covers exchange rates, money supply, loans, interest rates, and related financial data.
 
 Source: https://data.gov.sg/
 API docs: https://guide.data.gov.sg/developer-guide/dataset-apis
@@ -9,12 +9,48 @@ API docs: https://guide.data.gov.sg/developer-guide/dataset-apis
 
 from subsets_utils import get, save_raw_json, load_state, save_state
 from urllib.parse import urlencode
+import time
 
 
-# Known MAS datasets on data.gov.sg
+# MAS and MAS-sourced datasets on data.gov.sg
+# Format: "local_name": "dataset_id"
 DATASETS = {
+    # === Exchange Rates (MAS) ===
     "exchange_rates_usd_daily": "d_046ff8d521a218d9178178cfbfc45c2c",
     "exchange_rates_usd_annual": "d_6cb7c12d5f25f0a04e70657dfebcb514",
+
+    # === Exchange Rates (SINGSTAT, sourced from MAS) ===
+    "exchange_rates_avg_annual": "d_b09aeaf8eb591c4bfe347b66148c6b53",
+    "exchange_rates_avg_monthly": "d_b2b7ffe00aaec3936ed379369fdf531b",
+    "exchange_rates_avg_monthly_alt": "d_3c62d5eed03c40aeafbb6d0fa324e976",
+
+    # === Interest Rates ===
+    "bank_interest_rates_monthly": "d_5fe5a4bb4a1ecc4d8a56a095832e2b24",
+
+    # === Money Supply ===
+    "money_supply_monthly": "d_7ed3eccba609ac0bdfcf406d939bdb0b",
+    "money_supply_historical_monthly": "d_4c6bd8b2c4aa7041a31f3ed0cd122c47",
+
+    # === Currency ===
+    "currency_in_circulation_monthly": "d_10036483fced016b239ce7d2ab175125",
+
+    # === Commercial Banks - Loans ===
+    "commercial_banks_loans_quarterly": "d_0396bc943075a37d44c720ceb5be660a",
+    "commercial_banks_loans_monthly": "d_af0415517a3a3a94b3b74039934ef976",
+    "total_loans_non_bank_customers": "d_c2e116320c9d36f6ea6cdd82fb763de2",
+
+    # === Finance Companies ===
+    "finance_companies_loans_monthly": "d_4f73f4471a84f944ed37b651a8227ad8",
+
+    # === Foreign Exchange Market ===
+    "fx_market_turnover_monthly": "d_6dd6162d59737d67edfb35026dfd58c2",
+
+    # === Government Debt ===
+    "govt_debt_by_maturity_annual": "d_fd4b8728cb059c04fc0322199f4b2696",
+    "govt_debt_by_instrument_annual": "d_d4f7c9d15692b3c08aa9bc8bc56c0a72",
+
+    # === Credit Cards ===
+    "credit_charge_cards_annual": "d_b40deadbdc470e97b9e16de99c5e6ee2",
 }
 
 BASE_URL = "https://api-production.data.gov.sg/v2/public/api/datasets"
@@ -44,6 +80,9 @@ def fetch_all_rows(dataset_id, limit=1000):
 
         cursor = next_cursor
         print(f"      Fetched {len(all_rows)} rows so far...")
+
+        # Small delay between pagination requests
+        time.sleep(0.2)
 
     return all_rows
 
@@ -82,5 +121,9 @@ def run():
         save_state("datagovsg", {"completed": list(completed)})
 
         print(f"    -> saved {name} ({len(rows)} rows)")
+
+        # Rate limit: 0.5s between datasets
+        if i < len(pending):
+            time.sleep(0.5)
 
     print(f"  Completed: {len(completed)}/{len(DATASETS)} datasets")
