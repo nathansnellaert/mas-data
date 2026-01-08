@@ -8,9 +8,15 @@ API docs: https://guide.data.gov.sg/developer-guide/dataset-apis
 """
 
 from subsets_utils import get, save_raw_json, load_state, save_state
-from urllib.parse import urlencode
+from subsets_utils.environment import get_data_dir
+import gzip
+import json
+import os
 import time
 
+
+# Threshold for streaming vs in-memory fetch
+STREAM_THRESHOLD = 50000
 
 # MAS and MAS-sourced datasets on data.gov.sg
 # Format: "local_name": "dataset_id"
@@ -56,35 +62,20 @@ DATASETS = {
 BASE_URL = "https://api-production.data.gov.sg/v2/public/api/datasets"
 
 
-def fetch_all_rows(dataset_id, limit=1000):
-    """Fetch all rows from a dataset using pagination."""
-    all_rows = []
-    cursor = None
+def fetch_batch(dataset_id, cursor=None, limit=1000):
+    """Fetch a single batch of rows from a dataset."""
+    url = f"{BASE_URL}/{dataset_id}/list-rows?limit={limit}"
+    if cursor:
+        url = f"{url}&{cursor}"
 
-    while True:
-        url = f"{BASE_URL}/{dataset_id}/list-rows?limit={limit}"
-        if cursor:
-            url = f"{url}&{cursor}"
+    response = get(url, timeout=60.0)
+    response.raise_for_status()
+    data = response.json()
 
-        response = get(url, timeout=60.0)
-        response.raise_for_status()
-        data = response.json()
+    rows = data.get("data", {}).get("rows", [])
+    next_cursor = data.get("data", {}).get("links", {}).get("next")
 
-        rows = data.get("data", {}).get("rows", [])
-        all_rows.extend(rows)
-
-        # Check for next page
-        next_cursor = data.get("data", {}).get("links", {}).get("next")
-        if not next_cursor or not rows:
-            break
-
-        cursor = next_cursor
-        print(f"      Fetched {len(all_rows)} rows so far...")
-
-        # Small delay between pagination requests
-        time.sleep(0.2)
-
-    return all_rows
+    return rows, next_cursor
 
 
 def run():
@@ -107,20 +98,79 @@ def run():
         meta_url = f"{BASE_URL}/{dataset_id}/metadata"
         meta_response = get(meta_url, timeout=60.0)
         meta_response.raise_for_status()
-        metadata = meta_response.json()
+        metadata = meta_response.json().get("data", {})
 
-        # Fetch all rows using pagination
-        rows = fetch_all_rows(dataset_id)
+        # Check first batch to determine size
+        first_batch, next_cursor = fetch_batch(dataset_id, limit=STREAM_THRESHOLD)
 
-        save_raw_json({
-            "metadata": metadata.get("data", {}),
-            "rows": rows
-        }, name)
+        if next_cursor and len(first_batch) == STREAM_THRESHOLD:
+            # Large dataset - stream to NDJSON
+            print(f"    Large dataset detected, streaming to NDJSON...")
+
+            # Write first batch then continue streaming
+            raw_dir = os.path.join(get_data_dir(), "raw")
+            os.makedirs(raw_dir, exist_ok=True)
+            output_path = os.path.join(raw_dir, f"{name}.ndjson.gz")
+            meta_path = os.path.join(raw_dir, f"{name}_metadata.json")
+
+            total_rows = 0
+            cursor = next_cursor
+
+            with gzip.open(output_path, 'wt', encoding='utf-8') as f:
+                # Write first batch
+                for row in first_batch:
+                    f.write(json.dumps(row) + '\n')
+                total_rows = len(first_batch)
+                print(f"      Streamed {total_rows} rows...")
+
+                # Continue with remaining pages
+                while cursor:
+                    rows, next_cursor = fetch_batch(dataset_id, cursor)
+
+                    for row in rows:
+                        f.write(json.dumps(row) + '\n')
+
+                    total_rows += len(rows)
+
+                    if total_rows % 50000 == 0:
+                        print(f"      Streamed {total_rows} rows...")
+
+                    if not next_cursor or not rows:
+                        break
+
+                    cursor = next_cursor
+                    time.sleep(0.2)
+
+            # Save metadata separately
+            with open(meta_path, 'w', encoding='utf-8') as f:
+                json.dump(metadata, f)
+
+            print(f"    -> saved {name}.ndjson.gz ({total_rows} rows)")
+
+        else:
+            # Small dataset - accumulate in memory and save as JSON
+            all_rows = first_batch
+            cursor = next_cursor
+
+            while cursor:
+                rows, next_cursor = fetch_batch(dataset_id, cursor)
+                all_rows.extend(rows)
+
+                if not next_cursor or not rows:
+                    break
+
+                cursor = next_cursor
+                time.sleep(0.2)
+
+            save_raw_json({
+                "metadata": metadata,
+                "rows": all_rows
+            }, name)
+
+            print(f"    -> saved {name} ({len(all_rows)} rows)")
 
         completed.add(name)
         save_state("datagovsg", {"completed": list(completed)})
-
-        print(f"    -> saved {name} ({len(rows)} rows)")
 
         # Rate limit: 0.5s between datasets
         if i < len(pending):
