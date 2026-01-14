@@ -9,9 +9,6 @@ Source: https://eservices.mas.gov.sg/statistics/msb-xml/msb-statistics-history/
 from subsets_utils import get, save_raw_file, load_state, save_state
 import time
 
-# MAS MSB tables with their tableSetID and tableID
-# Source: https://eservices.mas.gov.sg/statistics/msb-xml/msb-statistics-history/Default.aspx
-
 TABLES = {
     # === Section I: Money and Banking ===
     "I.1": ("I.H", "Money Supply (DBU)"),
@@ -54,6 +51,8 @@ BASE_URL = "https://eservices.mas.gov.sg/statistics/msb-xml/msb-statistics-histo
 
 def run():
     """Fetch all MSB tables from MAS and save as HTML."""
+    print("Fetching MAS Monthly Statistical Bulletin tables...")
+
     state = load_state("msb_tables")
     completed = set(state.get("completed", []))
 
@@ -73,7 +72,6 @@ def run():
         response = get(url, timeout=60.0)
         response.raise_for_status()
 
-        # Save the HTML response - contains the data tables
         filename = f"msb_{table_id.replace('.', '_')}"
         save_raw_file(response.text, filename, extension="html")
 
@@ -82,7 +80,14 @@ def run():
 
         print(f"    -> saved {filename}.html")
 
-        # Small delay to be respectful to the server
         time.sleep(0.5)
 
     print(f"  Completed: {len(completed)}/{len(TABLES)} tables")
+
+
+NODES = {
+    run: [],
+}
+
+if __name__ == "__main__":
+    run()

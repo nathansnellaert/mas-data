@@ -9,6 +9,8 @@ Source: https://eservices.mas.gov.sg/statistics/msb/exchangerates.aspx
 from subsets_utils import get, save_raw_file, load_state, save_state
 import re
 
+BASE_URL = "https://eservices.mas.gov.sg/statistics/msb/exchangerates.aspx"
+
 
 def extract_viewstate(html):
     """Extract ASP.NET ViewState from page for form submissions."""
@@ -25,11 +27,10 @@ def extract_viewstate(html):
     return result
 
 
-BASE_URL = "https://eservices.mas.gov.sg/statistics/msb/exchangerates.aspx"
-
-
 def run():
     """Fetch exchange rates page (contains embedded data table)."""
+    print("Fetching MAS exchange rates...")
+
     state = load_state("exchange_rates")
 
     if state.get("fetched"):
@@ -45,3 +46,11 @@ def run():
 
     save_state("exchange_rates", {"fetched": True})
     print("    -> saved exchange_rates_page.html")
+
+
+NODES = {
+    run: [],
+}
+
+if __name__ == "__main__":
+    run()

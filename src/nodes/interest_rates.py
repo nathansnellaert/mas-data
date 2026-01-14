@@ -8,12 +8,13 @@ Source: https://eservices.mas.gov.sg/statistics/dir/domesticinterestrates.aspx
 
 from subsets_utils import get, save_raw_file, load_state, save_state
 
-
 BASE_URL = "https://eservices.mas.gov.sg/statistics/dir/domesticinterestrates.aspx"
 
 
 def run():
     """Fetch domestic interest rates page (contains embedded data)."""
+    print("Fetching MAS domestic interest rates...")
+
     state = load_state("interest_rates")
 
     if state.get("fetched"):
@@ -29,3 +30,11 @@ def run():
 
     save_state("interest_rates", {"fetched": True})
     print("    -> saved interest_rates_page.html")
+
+
+NODES = {
+    run: [],
+}
+
+if __name__ == "__main__":
+    run()

@@ -15,11 +15,8 @@ import os
 import time
 
 
-# Threshold for streaming vs in-memory fetch
 STREAM_THRESHOLD = 50000
 
-# MAS and MAS-sourced datasets on data.gov.sg
-# Format: "local_name": "dataset_id"
 DATASETS = {
     # === Exchange Rates (MAS) ===
     "exchange_rates_usd_daily": "d_046ff8d521a218d9178178cfbfc45c2c",
@@ -80,6 +77,8 @@ def fetch_batch(dataset_id, cursor=None, limit=1000):
 
 def run():
     """Fetch MAS datasets from data.gov.sg API."""
+    print("Fetching MAS datasets from data.gov.sg...")
+
     state = load_state("datagovsg")
     completed = set(state.get("completed", []))
 
@@ -89,25 +88,21 @@ def run():
         print("  All data.gov.sg datasets up to date")
         return
 
-    print(f"  Fetching {len(pending)} datasets from data.gov.sg...")
+    print(f"  Fetching {len(pending)} datasets...")
 
     for i, (name, dataset_id) in enumerate(pending, 1):
         print(f"  [{i}/{len(pending)}] Fetching {name}...")
 
-        # Fetch metadata
         meta_url = f"{BASE_URL}/{dataset_id}/metadata"
         meta_response = get(meta_url, timeout=60.0)
         meta_response.raise_for_status()
         metadata = meta_response.json().get("data", {})
 
-        # Check first batch to determine size
         first_batch, next_cursor = fetch_batch(dataset_id, limit=STREAM_THRESHOLD)
 
         if next_cursor and len(first_batch) == STREAM_THRESHOLD:
-            # Large dataset - stream to NDJSON
             print(f"    Large dataset detected, streaming to NDJSON...")
 
-            # Write first batch then continue streaming
             raw_dir = os.path.join(get_data_dir(), "raw")
             os.makedirs(raw_dir, exist_ok=True)
             output_path = os.path.join(raw_dir, f"{name}.ndjson.gz")
@@ -117,13 +112,11 @@ def run():
             cursor = next_cursor
 
             with gzip.open(output_path, 'wt', encoding='utf-8') as f:
-                # Write first batch
                 for row in first_batch:
                     f.write(json.dumps(row) + '\n')
                 total_rows = len(first_batch)
                 print(f"      Streamed {total_rows} rows...")
 
-                # Continue with remaining pages
                 while cursor:
                     rows, next_cursor = fetch_batch(dataset_id, cursor)
 
@@ -141,14 +134,12 @@ def run():
                     cursor = next_cursor
                     time.sleep(0.2)
 
-            # Save metadata separately
             with open(meta_path, 'w', encoding='utf-8') as f:
                 json.dump(metadata, f)
 
             print(f"    -> saved {name}.ndjson.gz ({total_rows} rows)")
 
         else:
-            # Small dataset - accumulate in memory and save as JSON
             all_rows = first_batch
             cursor = next_cursor
 
@@ -172,8 +163,15 @@ def run():
         completed.add(name)
         save_state("datagovsg", {"completed": list(completed)})
 
-        # Rate limit: 0.5s between datasets
         if i < len(pending):
             time.sleep(0.5)
 
     print(f"  Completed: {len(completed)}/{len(DATASETS)} datasets")
+
+
+NODES = {
+    run: [],
+}
+
+if __name__ == "__main__":
+    run()
