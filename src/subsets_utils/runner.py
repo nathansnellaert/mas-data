@@ -134,6 +134,57 @@ class MemoryProfiler:
 
 
 # =============================================================================
+# Self-retrigger via GitHub API
+# =============================================================================
+
+def _self_retrigger(run_id: str) -> bool:
+    """Dispatch our own workflow with the same run_id, so a long ingest
+    survives GHA's 6h job cap without requiring per-workflow retrigger steps.
+
+    Why a PAT: GITHUB_TOKEN cannot dispatch workflows on its own repo (GHA
+    blocks recursion). A user/fine-grained PAT with `actions:write` does.
+    """
+    pat = os.environ.get("GH_RETRIGGER_PAT")
+    repo = os.environ.get("GITHUB_REPOSITORY")
+    if not pat:
+        print("[runner] GH_RETRIGGER_PAT not set; cannot self-retrigger")
+        return False
+    if not repo:
+        print("[runner] GITHUB_REPOSITORY not set; cannot self-retrigger")
+        return False
+
+    ref = os.environ.get("GITHUB_REF_NAME") or "main"
+    url = f"https://api.github.com/repos/{repo}/actions/workflows/run.yml/dispatches"
+    body = json.dumps({"ref": ref, "inputs": {"run_id": run_id}}).encode()
+
+    import urllib.request
+    import urllib.error
+    req = urllib.request.Request(
+        url, data=body, method="POST",
+        headers={
+            "Authorization": f"Bearer {pat}",
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+            "Content-Type": "application/json",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            if resp.status in (200, 204):
+                print(f"[runner] Self-retriggered run.yml on {repo}@{ref} with run_id={run_id}")
+                return True
+            print(f"[runner] Self-retrigger HTTP {resp.status}")
+            return False
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8", errors="replace")[:500]
+        print(f"[runner] Self-retrigger HTTP {e.code}: {body}")
+        return False
+    except Exception as e:
+        print(f"[runner] Self-retrigger failed: {e}")
+        return False
+
+
+# =============================================================================
 # Helpers
 # =============================================================================
 
@@ -366,6 +417,17 @@ def main():
     run_id = incoming_run_id or _generate_run_id()
     os.environ["RUN_ID"] = run_id
 
+    # Export the resolved RUN_ID to $GITHUB_OUTPUT so the workflow's retrigger
+    # step can pass it back as run_id input — preserving DAG resume across
+    # retriggers even when the first invocation was started without one.
+    gh_output = os.environ.get("GITHUB_OUTPUT")
+    if gh_output:
+        try:
+            with open(gh_output, "a") as f:
+                f.write(f"resolved_run_id={run_id}\n")
+        except OSError:
+            pass
+
     # LOG_DIR: same path locally and in cloud, only the prefix differs
     log_dir = Path("/tmp/logs" if is_cloud() else "logs") / run_id
     log_dir.mkdir(parents=True, exist_ok=True)
@@ -405,6 +467,12 @@ def main():
     # large connectors (e.g. cbs-netherlands with 1000+ nodes) appear to hang
     # for tens of seconds while load_nodes() imports module files silently.
     env["PYTHONUNBUFFERED"] = "1"
+
+    # GHA hard-kills the job at 6h. Stop scheduling new nodes at 5h45m so
+    # in-flight nodes drain, run.json finalizes as needs_continuation, logs
+    # upload to R2, and the workflow's retrigger step fires before SIGKILL.
+    if is_cloud() and "DAG_TIME_BUDGET" not in env:
+        env["DAG_TIME_BUDGET"] = "20700"
 
     output_file = log_dir / "output.log"
 
@@ -481,9 +549,24 @@ def main():
     }
     _append_invocation(log_dir, invocation)
 
+    # Self-retrigger for cloud continuation. The runner dispatches its own
+    # workflow with the preserved run_id, so any connector benefits from
+    # continuation regardless of whether its workflow YAML has a retrigger
+    # step. On success we exit 0 — the workflow stays green and the new run
+    # is already in flight. On failure we fall through to exit 2; workflows
+    # that still have an in-YAML retrigger step act as a fallback.
+    continuation_dispatched = False
+    if exit_code == 2 and is_cloud():
+        if _self_retrigger(run_id):
+            exit_code = 0
+            continuation_dispatched = True
+
     # Print result
     if exit_code == 0:
-        print(f"Connector completed successfully (run.json status='done')")
+        if continuation_dispatched:
+            print(f"Continuation dispatched — workflow will retrigger with run_id={run_id}")
+        else:
+            print(f"Connector completed successfully (run.json status='done')")
         debug.log_run_end(status="completed")
     elif exit_code == 2:
         if run_status == "needs_continuation":

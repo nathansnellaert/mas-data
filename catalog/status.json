@@ -1,0 +1,274 @@
+{
+  "_meta": {
+    "catalog_source": "https://eservices.mas.gov.sg/api/action/datastore/search.json",
+    "last_synced": "2026-04-25T19:48:35.951558+00:00"
+  },
+  "datasets": {
+    "sgs_daily_prices_yields": {
+      "title": "Daily SGS Benchmark Issue Prices and Yields",
+      "metadata": {
+        "source_url": "https://eservices.mas.gov.sg/statistics/fdanet/SgsBenchmarkIssuePrices.aspx",
+        "page_url": "https://www.mas.gov.sg/bonds-and-bills",
+        "update_frequency": "daily",
+        "format": "HTML/XLSX",
+        "license": "Singapore Open Data Licence",
+        "description": "Daily clean prices and bid yields for Singapore Government Securities (SGS) benchmark issues across the 2Y, 5Y, 10Y, 15Y, 20Y, 30Y, and 50Y tenors. Source for the Singapore sovereign yield curve."
+      },
+      "status": "disabled",
+      "reason": "awaiting curation",
+      "node": null,
+      "curation": {
+        "expected_size": "S",
+        "expected_demand": 78,
+        "use_cases": "Construct or backtest the Singapore sovereign yield curve across tenors. Used by fixed-income analysts, macro researchers, and quants pricing SGD-denominated instruments."
+      }
+    },
+    "domestic_interest_rates_daily": {
+      "title": "Daily Domestic Interbank Rates (SORA, RMB Overnight, etc.)",
+      "metadata": {
+        "source_url": "https://eservices.mas.gov.sg/statistics/dir/DomesticInterestRates.aspx",
+        "page_url": "https://www.mas.gov.sg/statistics/interest-rates",
+        "update_frequency": "daily (next business day, ~9 a.m. SGT)",
+        "format": "HTML/XLSX",
+        "license": "Singapore Open Data Licence",
+        "description": "Daily Singapore-domestic benchmark interest rates: SORA (Singapore Overnight Rate Average), SORA Index, 1M/3M/6M Compounded SORA, Standing Facility Deposit/Borrowing rates, RMB Overnight rate, and 3-month USD SIBOR."
+      },
+      "status": "disabled",
+      "reason": "awaiting curation",
+      "node": null,
+      "curation": {
+        "expected_size": "S",
+        "expected_demand": 85,
+        "use_cases": "Track SORA and compounded SORA benchmarks for loan pricing, derivatives valuation, and monetary policy analysis. Essential reference for anyone working with SGD floating-rate instruments post-SIBOR transition."
+      }
+    },
+    "exchange_rates_avg_monthly": {
+      "title": "Exchange Rates — Average for Period, Monthly",
+      "metadata": {
+        "source_url": "https://eservices.mas.gov.sg/api/action/datastore/search.json?resource_id=6cf4a070-4eff-4baa-9c06-01b315ebd5d2",
+        "page_url": "https://www.mas.gov.sg/statistics/exchange-rates",
+        "update_frequency": "monthly",
+        "format": "JSON",
+        "license": "Singapore Open Data Licence",
+        "description": "Period-average SGD bilateral exchange rates against major currencies."
+      },
+      "status": "active",
+      "reason": null,
+      "node": "src/nodes/datagovsg.py",
+      "curation": {
+        "expected_size": null,
+        "expected_demand": 88,
+        "use_cases": "Deflate or convert SGD-denominated trade, revenue, or cost series into foreign currencies for cross-country comparisons. Widely used in economic research, corporate FX exposure analysis, and import/export modeling."
+      }
+    },
+    "interest_rates_banks_finance_companies_monthly": {
+      "title": "Interest Rates of Banks and Finance Companies, Monthly",
+      "metadata": {
+        "source_url": "https://eservices.mas.gov.sg/api/action/datastore/search.json?resource_id=5f2b18a8-0883-4769-a635-879c63d3caac",
+        "page_url": "https://www.mas.gov.sg/statistics/interest-rates",
+        "update_frequency": "monthly",
+        "format": "JSON",
+        "license": "Singapore Open Data Licence",
+        "description": "Average prime lending rate, savings deposit rate, and fixed deposit rates compiled from 10 leading banks and finance companies in Singapore."
+      },
+      "status": "active",
+      "reason": null,
+      "node": "src/nodes/datagovsg.py",
+      "curation": {
+        "expected_size": null,
+        "expected_demand": 76,
+        "use_cases": "Monitor consumer lending and deposit rate trends in Singapore for mortgage affordability research, bank margin analysis, and monetary policy transmission studies."
+      }
+    },
+    "banks_loans_advances_by_industry": {
+      "title": "Banks: Loans and Advances of DBUs to Non-Bank Customers by Industry, Monthly",
+      "metadata": {
+        "source_url": "https://eservices.mas.gov.sg/api/action/datastore/search.json?resource_id=54d93617-609d-477e-aaaa-f1f36e57a816",
+        "page_url": "https://www.mas.gov.sg/statistics/monthly-statistical-bulletin",
+        "update_frequency": "monthly",
+        "format": "JSON",
+        "license": "Singapore Open Data Licence",
+        "description": "Outstanding loans and advances by Singapore Domestic Banking Units (DBUs) to non-bank customers, broken down by industry (manufacturing, building & construction, financial institutions, professional & private individuals, etc.). MSB Table I.5A."
+      },
+      "status": "active",
+      "reason": null,
+      "node": "src/nodes/datagovsg.py",
+      "curation": {
+        "expected_size": null,
+        "expected_demand": 72,
+        "use_cases": "Analyze sectoral credit growth and concentration risk in Singapore's banking system. Useful for macro-prudential research, real estate credit exposure tracking, and economic cycle analysis."
+      }
+    },
+    "sgs_bond_prices_yields_all_issues": {
+      "title": "SGS Bond Prices and Yields — All Issues",
+      "metadata": {
+        "source_url": "https://eservices.mas.gov.sg/statistics/fdanet/BondPricesAndYields.aspx",
+        "page_url": "https://www.mas.gov.sg/bonds-and-bills",
+        "update_frequency": "daily",
+        "format": "HTML/XLSX",
+        "license": "Singapore Open Data Licence",
+        "description": "Per-issue daily SGS bond prices and yields by ISIN/issue code (full universe, not just benchmarks). Includes coupon, maturity, and bid/offer."
+      },
+      "status": "disabled",
+      "reason": "awaiting curation",
+      "node": null,
+      "curation": {
+        "expected_size": "S",
+        "expected_demand": 65,
+        "use_cases": "Price individual SGS bonds by ISIN for portfolio valuation or duration analysis. More granular than the benchmark series, useful for fixed-income practitioners managing specific bond positions."
+      }
+    },
+    "exchange_rates_eop_monthly": {
+      "title": "Exchange Rates — End of Period, Monthly",
+      "metadata": {
+        "source_url": "https://eservices.mas.gov.sg/api/action/datastore/search.json?resource_id=10eafb90-11a2-4fbd-b7a7-ac15a42d60b6",
+        "page_url": "https://www.mas.gov.sg/statistics/exchange-rates",
+        "update_frequency": "monthly",
+        "format": "JSON",
+        "license": "Singapore Open Data Licence",
+        "description": "Month-end SGD bilateral exchange rates against major currencies."
+      },
+      "status": "disabled",
+      "reason": "awaiting curation",
+      "node": null,
+      "curation": {
+        "expected_size": "XS",
+        "expected_demand": 80,
+        "use_cases": "Convert end-of-month balance sheet or stock positions from SGD to foreign currency. Complements the average-period series for financial statement translation and reserve valuation."
+      }
+    },
+    "finance_companies_loans_advances": {
+      "title": "Finance Companies: Loans and Advances, Monthly",
+      "metadata": {
+        "source_url": "https://eservices.mas.gov.sg/api/action/datastore/search.json?resource_id=27e076cd-23c6-4399-8906-f92e8a6327c7",
+        "page_url": "https://www.mas.gov.sg/statistics/monthly-statistical-bulletin",
+        "update_frequency": "monthly",
+        "format": "JSON",
+        "license": "Singapore Open Data Licence",
+        "description": "Loans and advances extended by Singapore-licensed finance companies. MSB Table II.2."
+      },
+      "status": "active",
+      "reason": null,
+      "node": "src/nodes/datagovsg.py",
+      "curation": {
+        "expected_size": null,
+        "expected_demand": 45,
+        "use_cases": "Track non-bank lending volumes from Singapore finance companies as a complement to DBU bank credit data. Useful for comprehensive credit market coverage in Singapore financial sector research."
+      }
+    },
+    "money_supply_sgd": {
+      "title": "Money Supply (SGD) — M1, M2, M3",
+      "metadata": {
+        "source_url": "https://eservices.mas.gov.sg/statistics/msb-xml/Report.aspx?tableSetID=I&tableID=I.1",
+        "page_url": "https://www.mas.gov.sg/statistics/monthly-statistical-bulletin/i-1-money-supply-sgd",
+        "update_frequency": "monthly",
+        "format": "XML/XLSX",
+        "license": "Singapore Open Data Licence",
+        "description": "Singapore monetary aggregates: M1 (currency in active circulation + demand deposits), M2 (M1 + quasi-money: fixed and savings deposits), M3 (M2 + net deposits of finance companies). MSB Table I.1."
+      },
+      "status": "active",
+      "reason": null,
+      "node": "src/nodes/datagovsg.py",
+      "curation": {
+        "expected_size": null,
+        "expected_demand": 82,
+        "use_cases": "Monitor monetary conditions and liquidity expansion in Singapore's economy. Core macroeconomic indicator used in inflation research, central bank policy analysis, and cross-country monetary comparisons."
+      }
+    },
+    "general_insurance_companies": {
+      "title": "General Insurance Companies — Annual Returns",
+      "metadata": {
+        "source_url": "https://eservices.mas.gov.sg/api/action/datastore/search.json?resource_id=c6147266-d4a9-48a6-8a11-5a5bc684f6c8",
+        "page_url": "https://www.mas.gov.sg/statistics/insurance-statistics",
+        "update_frequency": "annual",
+        "format": "JSON",
+        "license": "Singapore Open Data Licence",
+        "description": "Annual financial and operating statistics of general insurance companies registered in Singapore: gross/net premiums, claims, retention ratios, business in force. MSB Table II.6."
+      },
+      "status": "disabled",
+      "reason": "awaiting curation",
+      "node": null,
+      "curation": {
+        "expected_size": "XS",
+        "expected_demand": 42,
+        "use_cases": "Benchmark general insurance market size, premium growth, and combined ratios across Singapore's licensed carriers. Useful for insurance industry competitive analysis and regulatory research."
+      }
+    },
+    "exchange_rates_daily": {
+      "title": "Exchange Rates — End of Period, Daily",
+      "metadata": {
+        "source_url": "https://eservices.mas.gov.sg/api/action/datastore/search.json?resource_id=95932927-c8bc-4e7a-b484-68a66a24edfe",
+        "page_url": "https://www.mas.gov.sg/statistics/exchange-rates",
+        "update_frequency": "daily (midday SGT)",
+        "format": "JSON",
+        "license": "Singapore Open Data Licence",
+        "description": "Daily SGD bilateral exchange rates against major currencies (USD, EUR, GBP, JPY, AUD, CHF, CNY, HKD, MYR, etc.). Rates are the average of buying and selling interbank rates quoted around midday in Singapore."
+      },
+      "status": "active",
+      "reason": null,
+      "node": "src/nodes/datagovsg.py",
+      "curation": {
+        "expected_size": null,
+        "expected_demand": 92,
+        "use_cases": "Convert daily SGD-denominated transactions or asset values to and from major currencies. The authoritative official source for SGD FX rates, used in trading, compliance, and economic research."
+      }
+    },
+    "sgd_neer": {
+      "title": "S$ Nominal Effective Exchange Rate Index (S$NEER)",
+      "metadata": {
+        "source_url": "https://www.mas.gov.sg/statistics/exchange-rates/s$neer",
+        "page_url": "https://www.mas.gov.sg/statistics/exchange-rates/s$neer",
+        "update_frequency": "weekly",
+        "format": "XLSX",
+        "license": "Singapore Open Data Licence",
+        "description": "Trade-weighted index of the Singapore dollar against a basket of trading-partner currencies. Headline operational target of MAS's exchange-rate-centred monetary policy framework."
+      },
+      "status": "disabled",
+      "reason": "awaiting curation",
+      "node": null,
+      "curation": {
+        "expected_size": "XS",
+        "expected_demand": 88,
+        "use_cases": "Track and model MAS monetary policy stance — the S$NEER is the primary policy instrument MAS manages. Essential for macro researchers, FX strategists, and anyone modeling Singapore's inflation or trade competitiveness."
+      }
+    },
+    "official_foreign_reserves": {
+      "title": "Official Foreign Reserves",
+      "metadata": {
+        "source_url": "https://eservices.mas.gov.sg/api/action/datastore/search.json?resource_id=a8fab653-feeb-4c7a-a036-b544dca9bf1a",
+        "page_url": "https://www.mas.gov.sg/statistics/reserve-statistics/official-foreign-reserves",
+        "update_frequency": "monthly",
+        "format": "JSON",
+        "license": "Singapore Open Data Licence",
+        "description": "Singapore's official foreign reserves: gold, foreign exchange, IMF reserve position, and SDR holdings. Reported in S$ millions and US$ millions, valued at end-of-month market exchange rates."
+      },
+      "status": "disabled",
+      "reason": "awaiting curation",
+      "node": null,
+      "curation": {
+        "expected_size": "XS",
+        "expected_demand": 79,
+        "use_cases": "Monitor Singapore's reserve adequacy and composition over time for sovereign risk assessment and exchange rate regime analysis. Frequently cited in IMF Article IV consultations and regional FX stability research."
+      }
+    },
+    "interest_rates_banks_finance_companies_yearly": {
+      "title": "Interest Rates of Banks and Finance Companies, Yearly",
+      "metadata": {
+        "source_url": "https://eservices.mas.gov.sg/api/action/datastore/search.json?resource_id=bd841397-108f-4644-8da3-38a7c159d68a",
+        "page_url": "https://www.mas.gov.sg/statistics/interest-rates",
+        "update_frequency": "yearly",
+        "format": "JSON",
+        "license": "Singapore Open Data Licence",
+        "description": "Annual averages of prime lending, savings, and fixed deposit rates."
+      },
+      "status": "disabled",
+      "reason": "awaiting curation",
+      "node": null,
+      "curation": {
+        "expected_size": "XS",
+        "expected_demand": 55,
+        "use_cases": "Analyze long-run interest rate trends in Singapore for historical macro research or decade-scale lending cost comparisons. Lower-resolution companion to the monthly series, suitable for annual model inputs."
+      }
+    }
+  }
+}
